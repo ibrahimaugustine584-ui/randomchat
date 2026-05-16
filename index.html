@@ -803,20 +803,26 @@ function setConnStatus(state) {
 ════════════════════════════════════════════════ */
 async function fetchIceServers() {
   try {
-    const res = await fetch(
-      'https://ibrahim-chat.metered.live/api/v1/turn/credentials?apiKey=87a084f08f2b384880c4959a1fe3c04b3491'
+    const ctrl = new AbortController();
+    const tmo  = setTimeout(() => ctrl.abort(), 3000); // 3s max
+    const res  = await fetch(
+      'https://ibrahim-chat.metered.live/api/v1/turn/credentials?apiKey=87a084f08f2b384880c4959a1fe3c04b3491',
+      { signal: ctrl.signal }
     );
+    clearTimeout(tmo);
     return await res.json();
   } catch (e) {
+    console.warn('Metered fetch failed, falling back to Google STUN:', e.message);
     return [{ urls: 'stun:stun.l.google.com:19302' }];
   }
 }
 
 async function initPeer() {
-  return new Promise(async (resolve, reject) => {
-    if (peer && !peer.destroyed) { resolve(peer); return; }
+  if (peer && !peer.destroyed) return peer;
 
-    const iceServers = await fetchIceServers();
+  const iceServers = await fetchIceServers();
+
+  return new Promise((resolve, reject) => {
     peer = new Peer(undefined, { debug: 0, config: { iceServers } });
 
     const tmo = setTimeout(() => reject(new Error('Signaling server timeout. Check your internet connection.')), 12000);
