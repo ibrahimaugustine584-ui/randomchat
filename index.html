@@ -5,11 +5,43 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RandomChat — Live P2P Video</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.2.0/dist/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+
+<!-- ─── Inline SVG icon helpers ─── -->
+<script>
+// All icons as inline SVG — zero CDN dependency, works everywhere
+const IC = {
+  bolt:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4.5 13.5H12L11 22l8.5-11.5H12L13 2z"/></svg>`,
+  play:    `<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><polygon points="10 8 16 12 10 16"/></svg>`,
+  video:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="13" height="11" rx="2"/><path d="M22 8.5L16 12l6 3.5V8.5z"/></svg>`,
+  videoOff:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="3" x2="21" y2="21"/><path d="M15 12.3V9a2 2 0 0 0-2-2H5.5M4 5.7A2 2 0 0 0 2 7.6V17a2 2 0 0 0 2 2h11a2 2 0 0 0 1.95-1.55M22 8.5v7L18 14"/></svg>`,
+  mic:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>`,
+  micOff:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="3" x2="21" y2="21"/><path d="M9 9v4a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/><path d="M17 17a7 7 0 0 1-9.83-2.12M5.5 10.5A7 7 0 0 0 12 19"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>`,
+  share:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>`,
+  copy:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`,
+  chat:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
+  send:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2" fill="currentColor" stroke="none"/></svg>`,
+  flag:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>`,
+  skip:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4" fill="currentColor" stroke="none"/><line x1="19" y1="5" x2="19" y2="19" stroke-width="2.5"/></svg>`,
+  hangup:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="2" x2="22" y2="22"/><path d="M10.7 13.3a16 16 0 0 0 3 3l2.3-2.3a2 2 0 0 1 2.1-.46 12 12 0 0 0 3.96 1.27 2 2 0 0 1 1.64 2V20a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 2 2 0 0 1-.3-.22m-5.3-5.3A19.8 19.8 0 0 1 4.93 12a2 2 0 0 1-.22-.3A19.8 19.8 0 0 1 1.64 3 2 2 0 0 1 3.62 1H7a2 2 0 0 1 2 1.72 12 12 0 0 0 .66 2.67 2 2 0 0 1-.46 2.1L7 9.8"/></svg>`,
+  dot:     `<svg viewBox="0 0 10 10" width="9" height="9"><circle cx="5" cy="5" r="5" fill="currentColor"/></svg>`,
+};
+// Render icon as an HTML element
+function icon(name, cls='') {
+  const el = document.createElement('span');
+  el.className = 'ico' + (cls ? ' ' + cls : '');
+  el.innerHTML = IC[name] || '';
+  return el;
+}
+// Set icon innerHTML of an element
+function setIcon(elOrId, name) {
+  const el = typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
+  if (el) el.innerHTML = IC[name] || '';
+}
+</script>
+
 <style>
-/* ── Reset ── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 :root{
@@ -18,7 +50,7 @@
   --bg3:       #141428;
   --bg4:       #1a1a32;
   --bdr:       rgba(255,255,255,0.07);
-  --bdr2:      rgba(255,255,255,0.12);
+  --bdr2:      rgba(255,255,255,0.13);
   --blue:      #38bdf8;
   --blue2:     #0ea5e9;
   --blue-d:    rgba(56,189,248,0.10);
@@ -28,22 +60,26 @@
   --green-b:   rgba(52,211,153,0.3);
   --red:       #f87171;
   --red-d:     rgba(248,113,113,0.10);
-  --red-b:     rgba(248,113,113,0.3);
+  --red-b:     rgba(248,113,113,0.32);
   --purple:    #a78bfa;
   --purple-d:  rgba(167,139,250,0.10);
-  --purple-b:  rgba(167,139,250,0.25);
+  --purple-b:  rgba(167,139,250,0.26);
   --amber:     #fbbf24;
   --amber-d:   rgba(251,191,36,0.10);
-  --amber-b:   rgba(251,191,36,0.3);
+  --amber-b:   rgba(251,191,36,0.32);
   --txt:       #e8f4ff;
   --txt-d:     rgba(232,244,255,0.50);
-  --txt-f:     rgba(232,244,255,0.25);
+  --txt-f:     rgba(232,244,255,0.26);
   --font:      'DM Sans',system-ui,sans-serif;
   --mono:      'DM Mono',monospace;
 }
 
 html,body{height:100%;font-family:var(--font);background:#04040d;color:var(--txt);-webkit-font-smoothing:antialiased}
 body{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:16px}
+
+/* ── Icon spans ── */
+.ico{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1}
+.ico svg{display:block;width:1em;height:1em}
 
 /* ── App shell ── */
 .app{
@@ -74,9 +110,9 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;pad
 }
 #toast.show{transform:translateX(-50%) translateY(0)}
 
-/* ══════════════════════════════════════════════
+/* ════════════════════════════════
    LANDING
-══════════════════════════════════════════════ */
+════════════════════════════════ */
 #screen-landing{
   flex-direction:column;align-items:center;justify-content:center;
   gap:2rem;padding:3rem 1.5rem;
@@ -85,18 +121,20 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;pad
 }
 #screen-landing::before{
   content:'';position:absolute;inset:0;pointer-events:none;
-  background-image:linear-gradient(rgba(255,255,255,0.015) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.015) 1px,transparent 1px);
+  background-image:linear-gradient(rgba(255,255,255,0.014) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.014) 1px,transparent 1px);
   background-size:40px 40px
 }
 
 .hero{text-align:center;position:relative}
+
 .hero-eyebrow{
-  display:inline-flex;align-items:center;gap:6px;
+  display:inline-flex;align-items:center;gap:7px;
   font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;
   color:var(--blue);background:var(--blue-d);border:0.5px solid var(--blue-b);
-  border-radius:100px;padding:5px 14px;margin-bottom:18px
+  border-radius:100px;padding:6px 14px;margin-bottom:18px
 }
-.hero-eyebrow i{font-size:13px}
+.hero-eyebrow .ico{font-size:14px}
+
 .hero-title{font-size:clamp(26px,5vw,40px);font-weight:700;color:var(--txt);letter-spacing:-.03em;line-height:1.1}
 .hero-title em{font-style:normal;color:var(--blue)}
 .hero-sub{font-size:14px;color:var(--txt-d);margin-top:10px;line-height:1.65}
@@ -109,7 +147,7 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;pad
 }
 .sec-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--txt-f);margin-bottom:10px}
 
-/* chips */
+/* Chips */
 .chips{display:flex;flex-wrap:wrap;gap:7px}
 .chip{
   font-size:12px;font-weight:500;
@@ -120,35 +158,66 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;pad
 .chip:hover{border-color:var(--blue-b);color:var(--blue);background:var(--blue-d)}
 .chip.on{background:rgba(56,189,248,0.14);border-color:var(--blue);color:#c8eeff}
 
-/* mode */
+/* Mode buttons — larger, clear icons */
 .mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .mode-btn{
-  padding:16px 12px;border-radius:12px;
-  border:1.5px solid var(--bdr2);background:var(--bg3);
-  color:var(--txt-d);font-family:var(--font);font-size:13px;font-weight:500;
-  cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:18px 12px 16px;
+  border-radius:12px;
+  border:1.5px solid var(--bdr2);
+  background:var(--bg3);
+  color:var(--txt-d);
+  font-family:var(--font);font-size:13px;font-weight:500;
+  cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
   transition:all .18s;position:relative;overflow:hidden
 }
-.mode-btn i{font-size:22px;color:var(--txt-f);transition:color .18s}
-.mode-btn:hover{border-color:var(--blue-b);color:var(--txt);background:var(--bg4)}
-.mode-btn:hover i{color:var(--blue)}
-.mode-btn.on{border:2px solid var(--blue);background:rgba(56,189,248,0.06);color:var(--txt)}
-.mode-btn.on i{color:var(--blue)}
+/* Icon container inside mode button */
+.mode-btn .mode-icon{
+  width:44px;height:44px;
+  border-radius:10px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.08);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;
+  color:var(--txt-d);
+  transition:all .18s
+}
+.mode-btn .mode-icon .ico{font-size:22px}
+.mode-btn .mode-label{font-size:13px;font-weight:500;color:var(--txt-d);transition:color .18s}
+
+.mode-btn:hover .mode-icon{background:var(--blue-d);border-color:var(--blue-b);color:var(--blue)}
+.mode-btn:hover .mode-icon .ico{color:var(--blue)}
+.mode-btn:hover .mode-label{color:var(--txt)}
+
+.mode-btn.on{border:2px solid var(--blue);background:rgba(56,189,248,0.06)}
+.mode-btn.on .mode-icon{background:var(--blue-d);border-color:var(--blue-b);color:var(--blue)}
+.mode-btn.on .mode-icon .ico{color:var(--blue)}
+.mode-btn.on .mode-label{color:var(--txt)}
 .mode-btn.on::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--blue),transparent);opacity:.5}
 
-/* start btn */
+/* Check badge for selected mode */
+.mode-check{
+  position:absolute;top:8px;right:8px;
+  width:18px;height:18px;border-radius:50%;
+  background:var(--blue);
+  display:none;align-items:center;justify-content:center;
+  font-size:10px;color:#fff;font-weight:700
+}
+.mode-btn.on .mode-check{display:flex}
+
+/* Start button */
 .start-btn{
   width:100%;padding:14px;
   background:var(--blue);border:none;border-radius:12px;
   color:#fff;font-family:var(--font);font-size:15px;font-weight:600;letter-spacing:-.01em;
   cursor:pointer;transition:all .18s;
-  display:flex;align-items:center;justify-content:center;gap:8px;
+  display:flex;align-items:center;justify-content:center;gap:9px;
   box-shadow:0 4px 20px rgba(56,189,248,0.28)
 }
 .start-btn:hover{background:var(--blue2);transform:translateY(-1px);box-shadow:0 6px 26px rgba(56,189,248,0.38)}
 .start-btn:active{transform:translateY(0)}
 .start-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.start-btn i{font-size:17px}
+.start-btn .ico{font-size:17px}
 
 .online-badge{display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;color:var(--txt-f)}
 .live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 2s ease-in-out infinite;flex-shrink:0}
@@ -161,17 +230,17 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;pad
 }
 .err-banner.show{display:block}
 
-/* ══════════════════════════════════════════════
+/* ════════════════════════════════
    LOBBY
-══════════════════════════════════════════════ */
+════════════════════════════════ */
 #screen-lobby{
   flex-direction:column;align-items:center;justify-content:center;
   gap:1.5rem;padding:2.5rem 1.5rem;
   background:radial-gradient(ellipse 50% 35% at 50% -5%,rgba(56,189,248,0.06) 0%,transparent 70%),var(--bg)
 }
 .lobby-card{
-  background:var(--bg2);border:0.5px solid var(--bdr);
-  border-radius:16px;padding:1.75rem;width:100%;max-width:440px;
+  background:var(--bg2);border:0.5px solid var(--bdr);border-radius:16px;
+  padding:1.75rem;width:100%;max-width:440px;
   display:flex;flex-direction:column;gap:20px;
   box-shadow:0 8px 40px rgba(0,0,0,0.4)
 }
@@ -189,23 +258,25 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;pad
   background:var(--bg3);border:0.5px solid var(--bdr2);border-radius:12px;padding:10px 12px
 }
 .id-val{flex:1;font-family:var(--mono);font-size:12px;color:var(--blue);word-break:break-all;line-height:1.4}
+
 .icon-btn{
-  width:32px;height:32px;background:var(--blue-d);border:0.5px solid var(--blue-b);
+  width:34px;height:34px;background:var(--blue-d);border:0.5px solid var(--blue-b);
   border-radius:8px;color:var(--blue);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;font-size:15px;
+  display:flex;align-items:center;justify-content:center;font-size:16px;
   flex-shrink:0;transition:background .15s
 }
 .icon-btn:hover{background:rgba(56,189,248,0.2)}
+.icon-btn .ico{font-size:16px}
 
 .share-btn{
   width:100%;padding:12px;
   background:var(--blue-d);border:1px solid var(--blue-b);border-radius:12px;
   color:var(--blue);font-family:var(--font);font-size:13px;font-weight:600;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;
   transition:all .15s
 }
 .share-btn:hover{background:rgba(56,189,248,0.18);border-color:var(--blue)}
-.share-btn i{font-size:16px}
+.share-btn .ico{font-size:17px}
 
 .divider{display:flex;align-items:center;gap:12px;font-size:11px;color:var(--txt-f);font-weight:500}
 .divider::before,.divider::after{content:'';flex:1;height:0.5px;background:var(--bdr)}
@@ -218,6 +289,7 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;pad
 }
 .peer-input::placeholder{color:var(--txt-f);font-family:var(--font)}
 .peer-input:focus{border-color:var(--blue-b)}
+
 .connect-btn{
   padding:10px 18px;background:var(--blue);border:none;border-radius:12px;
   color:#fff;font-family:var(--font);font-size:13px;font-weight:600;
@@ -234,33 +306,37 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;pad
 }
 .cancel-btn:hover{background:rgba(255,255,255,0.04);color:var(--txt)}
 
-/* ══════════════════════════════════════════════
+/* ════════════════════════════════
    CALL SCREEN
-══════════════════════════════════════════════ */
+════════════════════════════════ */
 #screen-call{flex-direction:column}
 
 .call-header{
   background:var(--bg2);border-bottom:0.5px solid var(--bdr);
   padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0
 }
-.call-brand{font-size:15px;font-weight:700;color:var(--blue);letter-spacing:-.02em;display:flex;align-items:center;gap:7px}
-.call-brand i{font-size:17px}
-.hdr-right{display:flex;align-items:center;gap:10px}
+.call-brand{
+  font-size:15px;font-weight:700;color:var(--blue);letter-spacing:-.02em;
+  display:flex;align-items:center;gap:8px
+}
+.call-brand .ico{font-size:18px}
 
+.hdr-right{display:flex;align-items:center;gap:10px}
 .status-pill{
   font-size:11px;font-weight:600;padding:4px 12px;border-radius:100px;
-  display:flex;align-items:center;gap:5px
+  display:flex;align-items:center;gap:6px
 }
+.status-pill .ico{font-size:9px}
 .status-pill.connecting{background:var(--amber-d);border:0.5px solid var(--amber-b);color:var(--amber)}
 .status-pill.connected{background:var(--green-d);border:0.5px solid var(--green-b);color:var(--green)}
 .status-pill.disconnected{background:var(--red-d);border:0.5px solid var(--red-b);color:var(--red)}
-.status-pill i{font-size:8px}
 
 .timer-txt{font-family:var(--mono);font-size:12px;color:var(--txt-f);min-width:38px;text-align:right}
 
+/* Body */
 .call-body{flex:1;display:flex;overflow:hidden;min-height:0}
 
-/* videos */
+/* Videos column */
 .videos{flex:1;display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--bg);min-width:0}
 .vtile{
   flex:1;background:#0b0b18;border:0.5px solid var(--bdr);border-radius:14px;
@@ -275,8 +351,7 @@ video{width:100%;height:100%;object-fit:cover;display:block}
   width:58px;height:58px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
   font-size:16px;font-weight:700;letter-spacing:-.02em;
-  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  transition:opacity .2s
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)
 }
 .av-you{background:var(--blue-d);border:1.5px solid var(--blue-b);color:var(--blue)}
 .av-them{background:var(--purple-d);border:1.5px solid var(--purple-b);color:var(--purple)}
@@ -300,13 +375,13 @@ video{width:100%;height:100%;object-fit:cover;display:block}
   position:absolute;inset:0;
   background:rgba(6,6,16,0.88);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
-  border-radius:14px;transition:opacity .3s
+  border-radius:14px
 }
 .tile-overlay.hidden{display:none}
 .tile-overlay .spinner{width:28px;height:28px;border-width:2.5px}
 .overlay-txt{font-size:13px;color:var(--txt-d);font-weight:500}
 
-/* chat */
+/* Chat panel */
 .chat-panel{
   width:280px;flex-shrink:0;background:var(--bg2);
   border-left:0.5px solid var(--bdr);display:flex;flex-direction:column
@@ -316,7 +391,8 @@ video{width:100%;height:100%;object-fit:cover;display:block}
   font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;
   color:var(--txt-f);flex-shrink:0;display:flex;align-items:center;gap:8px
 }
-.chat-hdr i{font-size:14px}
+.chat-hdr .ico{font-size:15px}
+
 .chat-msgs{
   flex:1;overflow-y:auto;padding:14px 12px;
   display:flex;flex-direction:column;gap:10px;
@@ -341,62 +417,70 @@ video{width:100%;height:100%;object-fit:cover;display:block}
 }
 .chat-input::placeholder{color:var(--txt-f)}
 .chat-input:focus{border-color:var(--blue-b)}
+
 .send-btn{
   width:38px;height:38px;background:var(--blue);border:none;border-radius:9px;
-  color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;
-  flex-shrink:0;transition:background .15s;box-shadow:0 2px 10px rgba(56,189,248,0.2)
+  color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;transition:background .15s;
+  box-shadow:0 2px 10px rgba(56,189,248,0.2)
 }
 .send-btn:hover{background:var(--blue2)}
+.send-btn .ico{font-size:16px}
 
-/* controls */
+/* ── Call controls bar ── */
 .call-controls{
   background:var(--bg2);border-top:0.5px solid var(--bdr);
-  padding:14px 16px;display:flex;align-items:center;justify-content:center;
+  padding:14px 16px;
+  display:flex;align-items:center;justify-content:center;
   gap:10px;flex-shrink:0;flex-wrap:wrap
 }
 
-/* Round icon buttons — clear contrast */
+/* Round icon control buttons — clearly visible */
 .ctrl-btn{
-  width:48px;height:48px;border-radius:50%;
+  width:50px;height:50px;border-radius:50%;
   border:1.5px solid var(--bdr2);background:var(--bg3);
   color:var(--txt);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;font-size:20px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;
   transition:all .18s;flex-shrink:0;position:relative
 }
+.ctrl-btn .ico{font-size:22px}
 .ctrl-btn:hover{border-color:rgba(56,189,248,0.5);color:var(--blue);background:var(--blue-d)}
+
+/* OFF state — red */
 .ctrl-btn.off{background:var(--red-d);border-color:var(--red-b);color:var(--red)}
 .ctrl-btn.off:hover{background:rgba(248,113,113,0.18);border-color:var(--red)}
 
-/* tooltips */
+/* Tooltip */
 .ctrl-btn::after{
   content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);
   background:var(--bg3);border:0.5px solid var(--bdr2);border-radius:6px;
-  padding:4px 8px;font-size:11px;font-weight:500;color:var(--txt-d);
-  white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s;font-family:var(--font)
+  padding:4px 8px;font-size:11px;font-weight:500;color:var(--txt-d);font-family:var(--font);
+  white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s
 }
 .ctrl-btn:hover::after{opacity:1}
 
-/* big action buttons */
+/* Action buttons */
 .next-btn{
   padding:13px 24px;background:var(--blue);border:none;border-radius:100px;
   color:#fff;font-family:var(--font);font-size:13px;font-weight:600;
   cursor:pointer;white-space:nowrap;transition:all .18s;
-  display:flex;align-items:center;gap:7px;
-  box-shadow:0 4px 18px rgba(56,189,248,0.28)
+  display:flex;align-items:center;gap:8px;
+  box-shadow:0 4px 18px rgba(56,189,248,0.3)
 }
-.next-btn:hover{background:var(--blue2);transform:translateY(-1px);box-shadow:0 6px 22px rgba(56,189,248,0.38)}
+.next-btn:hover{background:var(--blue2);transform:translateY(-1px);box-shadow:0 6px 22px rgba(56,189,248,0.4)}
 .next-btn:active{transform:translateY(0)}
-.next-btn i{font-size:15px}
+.next-btn .ico{font-size:15px}
 
 .end-btn{
   padding:13px 20px;background:var(--red-d);border:1.5px solid var(--red-b);border-radius:100px;
   color:var(--red);font-family:var(--font);font-size:13px;font-weight:600;
   cursor:pointer;white-space:nowrap;transition:all .18s;
-  display:flex;align-items:center;gap:7px
+  display:flex;align-items:center;gap:8px
 }
 .end-btn:hover{background:rgba(248,113,113,0.18);border-color:var(--red);transform:translateY(-1px)}
 .end-btn:active{transform:translateY(0)}
-.end-btn i{font-size:15px}
+.end-btn .ico{font-size:15px}
 
 /* ── Responsive ── */
 @media(max-width:640px){
@@ -405,7 +489,7 @@ video{width:100%;height:100%;object-fit:cover;display:block}
   .chat-panel{display:none}
   .call-controls{gap:8px;padding:12px 10px}
   .next-btn,.end-btn{padding:11px 16px;font-size:12px}
-  .ctrl-btn{width:44px;height:44px;font-size:18px}
+  .ctrl-btn{width:46px;height:46px;font-size:20px}
 }
 @media(max-width:380px){
   .next-btn span,.end-btn span{display:none}
@@ -421,7 +505,10 @@ video{width:100%;height:100%;object-fit:cover;display:block}
 <!-- ════ LANDING ════ -->
 <div id="screen-landing" class="screen active">
   <div class="hero">
-    <div class="hero-eyebrow"><i class="ti ti-bolt"></i> WebRTC · No server · No sign-up</div>
+    <div class="hero-eyebrow" id="eyebrow-icon-wrap">
+      <span id="eyebrow-icon"></span>
+      WebRTC · No server · No sign-up
+    </div>
     <h1 class="hero-title">Meet <em>strangers</em>, face to face</h1>
     <p class="hero-sub">True peer-to-peer video — your browser connects directly to theirs.<br>Share a link, click, and you're live.</p>
   </div>
@@ -444,19 +531,26 @@ video{width:100%;height:100%;object-fit:cover;display:block}
     <div>
       <div class="sec-label">Choose mode</div>
       <div class="mode-grid">
+
         <button class="mode-btn on" data-mode="video" onclick="selectMode(this)">
-          <i class="ti ti-video"></i><span>Video + Audio</span>
+          <div class="mode-icon"><span class="ico" id="mode-icon-video"></span></div>
+          <div class="mode-label">Video + Audio</div>
+          <div class="mode-check">✓</div>
         </button>
+
         <button class="mode-btn" data-mode="audio" onclick="selectMode(this)">
-          <i class="ti ti-microphone"></i><span>Audio Only</span>
+          <div class="mode-icon"><span class="ico" id="mode-icon-audio"></span></div>
+          <div class="mode-label">Audio Only</div>
+          <div class="mode-check">✓</div>
         </button>
+
       </div>
     </div>
 
     <div id="start-error" class="err-banner"></div>
 
     <button class="start-btn" id="start-btn" onclick="handleStart()">
-      <i class="ti ti-player-play"></i>
+      <span class="ico" id="start-icon"></span>
       <span id="start-btn-txt">Start chatting</span>
     </button>
 
@@ -485,12 +579,14 @@ video{width:100%;height:100%;object-fit:cover;display:block}
       <div class="field-label">Your Peer ID</div>
       <div class="id-row">
         <div class="id-val" id="my-peer-id">Generating…</div>
-        <button class="icon-btn" onclick="copyId()" title="Copy ID"><i class="ti ti-copy"></i></button>
+        <button class="icon-btn" onclick="copyId()" title="Copy ID">
+          <span class="ico" id="copy-icon"></span>
+        </button>
       </div>
     </div>
 
     <button class="share-btn" onclick="shareLink()">
-      <i class="ti ti-share"></i>
+      <span class="ico" id="share-icon"></span>
       Copy shareable invite link
     </button>
 
@@ -509,14 +605,17 @@ video{width:100%;height:100%;object-fit:cover;display:block}
 </div>
 
 
-<!-- ════ CALL ════ -->
+<!-- ════ CALL SCREEN ════ -->
 <div id="screen-call" class="screen">
 
   <div class="call-header">
-    <div class="call-brand"><i class="ti ti-video"></i> RandomChat</div>
+    <div class="call-brand">
+      <span class="ico" id="brand-icon"></span>
+      RandomChat
+    </div>
     <div class="hdr-right">
       <div class="status-pill connecting" id="conn-status">
-        <i class="ti ti-circle-filled"></i>
+        <span class="ico" id="status-dot"></span>
         <span id="conn-status-txt">Connecting</span>
       </div>
       <span class="timer-txt" id="call-timer">00:00</span>
@@ -524,9 +623,10 @@ video{width:100%;height:100%;object-fit:cover;display:block}
   </div>
 
   <div class="call-body">
+
     <div class="videos">
 
-      <!-- Remote tile -->
+      <!-- Remote tile (stranger) -->
       <div class="vtile remote">
         <div class="speak-ring" id="speak-ring"></div>
         <div class="av av-them" id="remote-av">?</div>
@@ -535,10 +635,10 @@ video{width:100%;height:100%;object-fit:cover;display:block}
           <div class="spinner"></div>
           <div class="overlay-txt" id="overlay-txt">Waiting for stranger…</div>
         </div>
-        <div class="tile-tag" id="remote-tag">Stranger</div>
+        <div class="tile-tag">Stranger</div>
       </div>
 
-      <!-- Local tile -->
+      <!-- Local tile (you) -->
       <div class="vtile">
         <div class="av av-you" id="local-av">You</div>
         <video id="local-video" autoplay playsinline muted class="video-local"></video>
@@ -547,88 +647,119 @@ video{width:100%;height:100%;object-fit:cover;display:block}
 
     </div>
 
+    <!-- Chat panel -->
     <div class="chat-panel">
-      <div class="chat-hdr"><i class="ti ti-message-circle-2"></i> Chat</div>
+      <div class="chat-hdr">
+        <span class="ico" id="chat-hdr-icon"></span>
+        Chat
+      </div>
       <div class="chat-msgs" id="chat-msgs">
         <div class="msg-bubble sys">Connect to start chatting 👋</div>
       </div>
       <div class="chat-input-row">
         <input id="chat-input" class="chat-input" placeholder="Type a message…" maxlength="500"/>
         <button class="send-btn" onclick="sendChat()" aria-label="Send">
-          <i class="ti ti-send"></i>
+          <span class="ico" id="send-icon"></span>
         </button>
       </div>
     </div>
-  </div>
 
-  <!-- ─── Controls ─── -->
+  </div><!-- /call-body -->
+
+  <!-- Controls bar -->
   <div class="call-controls">
 
     <button class="ctrl-btn" id="btn-mic" onclick="toggleMic()"
       data-tip="Mute mic" title="Toggle microphone" aria-label="Toggle microphone">
-      <i class="ti ti-microphone" id="mic-icon"></i>
+      <span class="ico" id="mic-icon"></span>
     </button>
 
     <button class="ctrl-btn" id="btn-cam" onclick="toggleCam()"
       data-tip="Camera off" title="Toggle camera" aria-label="Toggle camera">
-      <i class="ti ti-video" id="cam-icon"></i>
+      <span class="ico" id="cam-icon"></span>
     </button>
 
-    <button class="ctrl-btn" onclick="reportUser()"
+    <button class="ctrl-btn" id="btn-report" onclick="reportUser()"
       data-tip="Report" title="Report this user" aria-label="Report user">
-      <i class="ti ti-flag-3"></i>
+      <span class="ico" id="report-icon"></span>
     </button>
 
     <button class="next-btn" onclick="nextStranger()">
-      <i class="ti ti-player-skip-forward"></i>
+      <span class="ico" id="next-icon"></span>
       <span>Next stranger</span>
     </button>
 
     <button class="end-btn" onclick="endCall()">
-      <i class="ti ti-phone-off"></i>
+      <span class="ico" id="hangup-icon"></span>
       <span>End call</span>
     </button>
 
   </div>
 
 </div><!-- /screen-call -->
-
 </div><!-- /app -->
 
-<script>
-/* ════════════════════════════════════════════════════
-   STATE
-════════════════════════════════════════════════════ */
-let peer        = null;
-let myStream    = null;
-let currentCall = null;
-let dataConn    = null;
-let myPeerId    = null;
-let selectedMode = 'video';
-let micOn = true, camOn = true;
-let timerID = null, timerSecs = 0;
-let autoConnectId = null;
 
-/* ════════════════════════════════════════════════════
-   INIT
-════════════════════════════════════════════════════ */
+<script>
+/* ════════════════════════════════════════════════
+   RENDER ALL ICONS after DOM is ready
+════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
+  // Static icons
+  setIcon('eyebrow-icon',    'bolt');
+  setIcon('mode-icon-video', 'video');
+  setIcon('mode-icon-audio', 'mic');
+  setIcon('start-icon',      'play');
+  setIcon('copy-icon',       'copy');
+  setIcon('share-icon',      'share');
+  setIcon('brand-icon',      'video');
+  setIcon('status-dot',      'dot');
+  setIcon('chat-hdr-icon',   'chat');
+  setIcon('send-icon',       'send');
+  setIcon('mic-icon',        'mic');
+  setIcon('cam-icon',        'video');
+  setIcon('report-icon',     'flag');
+  setIcon('next-icon',       'skip');
+  setIcon('hangup-icon',     'hangup');
+
+  // Chips
   document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => c.classList.toggle('on')));
-  document.getElementById('chat-input').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }});
-  document.getElementById('peer-id-input').addEventListener('keydown', e => { if (e.key === 'Enter') connectToPeer(); });
+
+  // Chat enter to send
+  document.getElementById('chat-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+  });
+
+  // Peer ID input enter to connect
+  document.getElementById('peer-id-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') connectToPeer();
+  });
 
   // Simulated online count
   const n = (9800 + Math.floor(Math.random() * 6200)).toLocaleString();
   document.getElementById('online-count').textContent = n + ' people online right now';
 
-  // Auto-connect via URL ?peer=ID
-  const p = new URLSearchParams(location.search).get('peer');
-  if (p) { autoConnectId = p; handleStart(); }
+  // Auto-connect from URL ?peer=ID
+  const autoId = new URLSearchParams(location.search).get('peer');
+  if (autoId) { autoConnectId = autoId; handleStart(); }
 });
 
-/* ════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════════ */
+let peer         = null;
+let myStream     = null;
+let currentCall  = null;
+let dataConn     = null;
+let myPeerId     = null;
+let selectedMode = 'video';
+let micOn = true, camOn = true;
+let timerID = null, timerSecs = 0;
+let autoConnectId = null;
+
+/* ════════════════════════════════════════════════
    UI HELPERS
-════════════════════════════════════════════════════ */
+════════════════════════════════════════════════ */
 function selectMode(btn) {
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('on'));
   btn.classList.add('on');
@@ -656,26 +787,37 @@ function showStartError(msg) {
   setTimeout(() => el.classList.remove('show'), 8000);
 }
 
-function setLobbyStatus(txt) { document.getElementById('lobby-status').textContent = txt; }
+function setLobbyStatus(txt) {
+  document.getElementById('lobby-status').textContent = txt;
+}
 
 function setConnStatus(state) {
-  // state: 'connecting' | 'connected' | 'disconnected'
   const pill = document.getElementById('conn-status');
   const txt  = document.getElementById('conn-status-txt');
   pill.className = 'status-pill ' + state;
-  txt.textContent = state.charAt(0).toUpperCase() + state.slice(1);
+  txt.textContent = { connecting:'Connecting', connected:'Connected', disconnected:'Disconnected' }[state] || state;
 }
 
-/* ════════════════════════════════════════════════════
-   PEER INIT
-════════════════════════════════════════════════════ */
-function initPeer() {
-  return new Promise((resolve, reject) => {
+/* ════════════════════════════════════════════════
+   PEER JS
+════════════════════════════════════════════════ */
+async function fetchIceServers() {
+  try {
+    const res = await fetch(
+      'https://ibrahim-chat.metered.live/api/v1/turn/credentials?apiKey=87a084f08f2b384880c4959a1fe3c04b3491'
+    );
+    return await res.json();
+  } catch (e) {
+    return [{ urls: 'stun:stun.l.google.com:19302' }];
+  }
+}
+
+async function initPeer() {
+  return new Promise(async (resolve, reject) => {
     if (peer && !peer.destroyed) { resolve(peer); return; }
 
-    // Uses PeerJS free cloud signaling (0.peerjs.com on port 443)
-    // For production scale: host your own https://github.com/peers/peerjs-server
-    peer = new Peer(undefined, { debug: 0 });
+    const iceServers = await fetchIceServers();
+    peer = new Peer(undefined, { debug: 0, config: { iceServers } });
 
     const tmo = setTimeout(() => reject(new Error('Signaling server timeout. Check your internet connection.')), 12000);
 
@@ -699,22 +841,22 @@ function initPeer() {
       if (peer && !peer.destroyed) setTimeout(() => { try { peer.reconnect(); } catch(e){} }, 2000);
     });
 
-    // Incoming MEDIA call
+    // Incoming media call
     peer.on('call', call => {
-      if (currentCall) { call.close(); return; } // already in a call
+      if (currentCall) { call.close(); return; }
       handleIncomingCall(call);
     });
 
-    // Incoming DATA connection (chat)
+    // Incoming data channel (chat)
     peer.on('connection', conn => {
       if (!dataConn || !dataConn.open) setupDataConn(conn);
     });
   });
 }
 
-/* ════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════
    MEDIA
-════════════════════════════════════════════════════ */
+════════════════════════════════════════════════ */
 async function getLocalStream() {
   if (myStream && myStream.active) return myStream;
   const wantVideo = selectedMode === 'video';
@@ -727,13 +869,12 @@ async function getLocalStream() {
     if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')
       throw new Error('Camera/mic permission denied. Click the lock icon in the address bar and allow access.');
     if (err.name === 'NotFoundError')
-      throw new Error('No camera or microphone found. Please connect a device and try again.');
-    // Fallback: audio only
+      throw new Error('No camera or microphone found. Connect a device and try again.');
     try {
       myStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      showToast('📷 No camera found — audio-only mode activated.');
+      showToast('📷 No camera — audio-only mode.');
     } catch (e2) {
-      throw new Error('Cannot access camera or microphone. Please check permissions.');
+      throw new Error('Cannot access camera or microphone. Check permissions.');
     }
   }
   // Attach local preview
@@ -743,46 +884,42 @@ async function getLocalStream() {
   return myStream;
 }
 
-/* ════════════════════════════════════════════════════
-   START FLOW
-════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════
+   START
+════════════════════════════════════════════════ */
 async function handleStart() {
   const btn = document.getElementById('start-btn');
   const txt = document.getElementById('start-btn-txt');
   btn.disabled = true;
   txt.textContent = 'Connecting…';
-
   try {
     await initPeer();
     showScreen('lobby');
     setLobbyStatus('Requesting camera & microphone…');
     await getLocalStream();
     setLobbyStatus('Waiting for someone to connect…');
-
     if (autoConnectId) {
-      const id = autoConnectId;
-      autoConnectId = null;
+      const id = autoConnectId; autoConnectId = null;
       document.getElementById('peer-id-input').value = id;
-      setLobbyStatus('Auto-connecting to peer from link…');
+      setLobbyStatus('Auto-connecting from invite link…');
       setTimeout(connectToPeer, 700);
     }
   } catch (err) {
     showScreen('landing');
     showStartError(err.message || 'Something went wrong. Please try again.');
   }
-
   btn.disabled = false;
   txt.textContent = 'Start chatting';
 }
 
-/* ════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════
    LOBBY
-════════════════════════════════════════════════════ */
+════════════════════════════════════════════════ */
 function copyId() {
   if (!myPeerId) { showToast('ID not ready yet.'); return; }
   navigator.clipboard.writeText(myPeerId)
     .then(() => showToast('✓ Peer ID copied!'))
-    .catch(() => { prompt('Copy your Peer ID:', myPeerId); });
+    .catch(() => prompt('Copy your Peer ID:', myPeerId));
 }
 
 function shareLink() {
@@ -790,13 +927,13 @@ function shareLink() {
   const url = location.origin + location.pathname + '?peer=' + myPeerId;
   navigator.clipboard.writeText(url)
     .then(() => showToast('✓ Invite link copied! Share it with your friend.'))
-    .catch(() => { prompt('Copy this invite link:', url); });
+    .catch(() => prompt('Copy this invite link:', url));
 }
 
 function cancelLobby() {
   cleanupCall();
   if (myStream) { myStream.getTracks().forEach(t => t.stop()); myStream = null; }
-  if (peer && !peer.destroyed) { try { peer.destroy(); } catch(e){} }
+  if (peer && !peer.destroyed) try { peer.destroy(); } catch(e){}
   peer = null; myPeerId = null;
   document.getElementById('my-peer-id').textContent = 'Generating…';
   showScreen('landing');
@@ -809,22 +946,18 @@ async function connectToPeer() {
   if (targetId === myPeerId) { showToast("That's your own ID — share it with someone else!"); return; }
 
   setLobbyStatus('Connecting to ' + targetId.slice(0, 8) + '…');
-
   try {
     if (!myStream || !myStream.active) await getLocalStream();
 
-    // 1. Open data channel
     const conn = peer.connect(targetId, { reliable: true, serialization: 'json' });
     setupDataConn(conn);
 
-    // 2. When data channel is open, place media call
     conn.on('open', () => {
       const call = peer.call(targetId, myStream);
       handleOutgoingCall(call);
     });
-
     conn.on('error', err => {
-      showToast('⚠️ Connection failed: ' + err.message);
+      showToast('⚠️ Connection failed.');
       setLobbyStatus('Failed. Check the Peer ID and try again.');
     });
 
@@ -845,18 +978,15 @@ async function connectToPeer() {
   input.value = '';
 }
 
-/* ════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════
    CALL HANDLING
-════════════════════════════════════════════════════ */
+════════════════════════════════════════════════ */
 function enterCallScreen() {
   showScreen('call');
-  // Attach local stream
   if (myStream) {
-    const lv = document.getElementById('local-video');
-    lv.srcObject = myStream;
+    document.getElementById('local-video').srcObject = myStream;
     document.getElementById('local-av').style.display = 'none';
   }
-  // Reset remote tile
   document.getElementById('remote-video').srcObject = null;
   document.getElementById('remote-av').style.display = 'flex';
   document.getElementById('remote-overlay').classList.remove('hidden');
@@ -874,10 +1004,7 @@ function handleIncomingCall(call) {
     call.on('stream', s => onRemoteStream(s));
     call.on('close',  () => onCallEnded('Stranger disconnected.'));
     call.on('error', err => onCallEnded('Error: ' + (err.message || err)));
-  }).catch(err => {
-    showToast('Cannot answer: ' + err.message);
-    call.close();
-  });
+  }).catch(err => { showToast('Cannot answer: ' + err.message); call.close(); });
 }
 
 function handleOutgoingCall(call) {
@@ -891,7 +1018,6 @@ function handleOutgoingCall(call) {
 function onRemoteStream(stream) {
   const video = document.getElementById('remote-video');
   video.srcObject = stream;
-
   video.onloadedmetadata = () => {
     document.getElementById('remote-av').style.display = 'none';
     document.getElementById('remote-overlay').classList.add('hidden');
@@ -901,8 +1027,7 @@ function onRemoteStream(stream) {
     addSysMsg('🟢 Connected! Say hello.');
     startAudioMeter(stream);
   };
-
-  // Fallback for audio-only / slow metadata
+  // Fallback for audio-only
   setTimeout(() => {
     if (!document.getElementById('remote-overlay').classList.contains('hidden')) {
       document.getElementById('remote-overlay').classList.add('hidden');
@@ -927,9 +1052,9 @@ function onCallEnded(reason) {
   currentCall = null;
 }
 
-/* ════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════
    AUDIO METER → speak ring
-════════════════════════════════════════════════════ */
+════════════════════════════════════════════════ */
 let audioCtx = null;
 function startAudioMeter(stream) {
   try {
@@ -953,9 +1078,9 @@ function startAudioMeter(stream) {
   }
 }
 
-/* ════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════
    DATA CONN + CHAT
-════════════════════════════════════════════════════ */
+════════════════════════════════════════════════ */
 function setupDataConn(conn) {
   dataConn = conn;
   conn.on('data', d => { if (d && d.type === 'chat') addMsg(d.text, false); });
@@ -964,7 +1089,7 @@ function setupDataConn(conn) {
 }
 
 function sendChat() {
-  const inp  = document.getElementById('chat-input');
+  const inp = document.getElementById('chat-input');
   const text = inp.value.trim();
   if (!text) return;
   if (!dataConn || !dataConn.open) { showToast('Chat unavailable — not connected yet.'); return; }
@@ -998,99 +1123,10 @@ function addSysMsg(text) {
   msgs.scrollTop = msgs.scrollHeight;
 }
 
-/* ════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════
    CONTROLS
-════════════════════════════════════════════════════ */
+════════════════════════════════════════════════ */
 function toggleMic() {
   if (!myStream) return;
   micOn = !micOn;
-  myStream.getAudioTracks().forEach(t => t.enabled = micOn);
-  const btn  = document.getElementById('btn-mic');
-  const icon = document.getElementById('mic-icon');
-  btn.classList.toggle('off', !micOn);
-  icon.className = micOn ? 'ti ti-microphone' : 'ti ti-microphone-off';
-  btn.setAttribute('data-tip', micOn ? 'Mute mic' : 'Unmute mic');
-  btn.title = micOn ? 'Mute microphone' : 'Unmute microphone';
-}
-
-function toggleCam() {
-  if (!myStream) return;
-  camOn = !camOn;
-  myStream.getVideoTracks().forEach(t => t.enabled = camOn);
-  const btn  = document.getElementById('btn-cam');
-  const icon = document.getElementById('cam-icon');
-  btn.classList.toggle('off', !camOn);
-  icon.className = camOn ? 'ti ti-video' : 'ti ti-video-off';
-  btn.setAttribute('data-tip', camOn ? 'Camera off' : 'Camera on');
-  btn.title = camOn ? 'Turn off camera' : 'Turn on camera';
-}
-
-function nextStranger() {
-  cleanupCall();
-  // Reset button states
-  micOn = camOn = true;
-  if (myStream) {
-    myStream.getAudioTracks().forEach(t => t.enabled = true);
-    myStream.getVideoTracks().forEach(t => t.enabled = true);
-  }
-  document.getElementById('btn-mic').classList.remove('off');
-  document.getElementById('mic-icon').className = 'ti ti-microphone';
-  document.getElementById('btn-cam').classList.remove('off');
-  document.getElementById('cam-icon').className = 'ti ti-video';
-  // Clear chat
-  document.getElementById('chat-msgs').innerHTML = '<div class="msg-bubble sys">Connect to start chatting 👋</div>';
-  showScreen('lobby');
-  setLobbyStatus('Looking for next stranger…');
-}
-
-function endCall() {
-  cleanupCall();
-  if (myStream) { myStream.getTracks().forEach(t => t.stop()); myStream = null; }
-  const lv = document.getElementById('local-video');
-  lv.srcObject = null;
-  document.getElementById('local-av').style.display = 'flex';
-  showScreen('landing');
-}
-
-function reportUser() {
-  addSysMsg('⚠️ Report submitted. Click "Next stranger" to move on.');
-  showToast('Report logged.');
-}
-
-function cleanupCall() {
-  stopTimer();
-  if (currentCall) { try { currentCall.close(); } catch(e){} currentCall = null; }
-  if (dataConn)    { try { dataConn.close(); }    catch(e){} dataConn = null; }
-  const rv = document.getElementById('remote-video');
-  rv.srcObject = null;
-  document.getElementById('remote-av').style.display = 'flex';
-}
-
-/* ════════════════════════════════════════════════════
-   TIMER
-════════════════════════════════════════════════════ */
-function startTimer() {
-  stopTimer();
-  timerSecs = 0;
-  timerID = setInterval(() => {
-    timerSecs++;
-    const m = String(Math.floor(timerSecs / 60)).padStart(2, '0');
-    const s = String(timerSecs % 60).padStart(2, '0');
-    document.getElementById('call-timer').textContent = m + ':' + s;
-  }, 1000);
-}
-function stopTimer()  { if (timerID) { clearInterval(timerID); timerID = null; } }
-function resetTimer() { stopTimer(); document.getElementById('call-timer').textContent = '00:00'; }
-
-/* ════════════════════════════════════════════════════
-   CLEANUP ON LEAVE
-════════════════════════════════════════════════════ */
-window.addEventListener('beforeunload', () => {
-  if (currentCall) try { currentCall.close(); } catch(e){}
-  if (dataConn)    try { dataConn.close(); }    catch(e){}
-  if (peer && !peer.destroyed) try { peer.destroy(); } catch(e){}
-  if (myStream) myStream.getTracks().forEach(t => t.stop());
-});
-</script>
-</body>
-</html>
+  
