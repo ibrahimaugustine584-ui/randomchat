@@ -833,8 +833,8 @@ html, body {
 const CFG = {
   METERED_URL:  'https://ibrahim-chat.metered.live/api/v1/turn/credentials?apiKey=87a084f08f2b384880c4959a1fe3c04b3491',
   SLOT_PFX:     'rc25x-',   // unique prefix to avoid collisions with other apps
-  SLOT_COUNT:   150,         // size of the slot pool
-  SLOTS_TRY:    12,          // parallel call attempts per round
+  SLOT_COUNT:   10,         // size of the slot pool
+  SLOTS_TRY:    8,          // parallel call attempts per round
   CALL_TIMEOUT: 5000,        // ms before giving up on a slot call
 };
 
@@ -1117,7 +1117,7 @@ const Match = {
           console.log('[RC] Watchdog: rescanning…');
           Match.start();
         }
-      }, 60000);
+      }, 6000);
 
       S.peer.on('call', () => clearTimeout(watchdog));
 
